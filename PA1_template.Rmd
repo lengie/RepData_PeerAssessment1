@@ -1,24 +1,77 @@
 ---
 title: "Reproducible Research: Peer Assessment 1"
+Author: Liana Engie
 output: 
   html_document:
     keep_md: true
 ---
 
+#Assumes in your working directory
 
 ## Loading and preprocessing the data
 
+First, load the requisite packages in R. 
+Then, download the data from the internet and unzip it.
 
+```{r}
+library(dplyr)
+library(knitr)
+download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip","act.zip")
+unzip("act.zip")
+data <- read.csv("activity.csv")
+```
 
 ## What is mean total number of steps taken per day?
 
+To get a sense of the data, the sum of total steps per day was calculated, as can be seen in the following graph. 
+A histogram was created of the frequency of number of steps taken in a day.
 
+```{r}
+by_date <- group_by(data,date)
+total_steps <- summarize(by_date,total=sum(steps,na.rm=TRUE))
+#print(total_steps)
+
+s <- ggplot(total_steps,aes(date,total,group=1))+
+     geom_point(size=3)+
+     geom_line(,size=.5)+
+     theme_gray()+
+     theme(axis.text.x=element_text(angle=80))+
+     scale_x_discrete(
+          c("2012-10-01",
+            "2012-10-15",
+            "2012-10-31",
+            "2012-11-15",
+            "2012-11-30"))
+print(s)
+
+h <- ggplot(total_steps,aes(total))+
+     geom_histogram(color="steelblue")+
+     theme_gray()+
+     ylab("Frequency")+
+     xlab("Total steps per day")+
+     ggtitle("Steps per Day in October-Nov 2012")
+print(h)
+```
+
+From this data, the mean and median number of steps per day can be calculated.
+
+```{r}
+overall_mean <- mean(total_steps$total)
+print(overall_mean)
+
+median <- median(total_steps$total)
+print(median)
+```
 
 ## What is the average daily activity pattern?
+```{r}
+by_interval <- data %>% group_by(interval)
+by_interval %>% summarize(total=sum(steps,na.rm=TRUE))
+print(by_interval)
+```
 
 
-
-## Imputing missing values
+## Inputing missing values
 
 
 
