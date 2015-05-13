@@ -16,7 +16,7 @@ This markdown file assumes user is already in working directory.
 First, load the requisite packages in R. 
 Then, download the data from the internet and unzip it.
 
-```{r}
+```{r loading}
 library(dplyr)
 library(knitr)
 library(ggplot2)
@@ -65,7 +65,7 @@ print(h)
 ```
 
 From this data, the mean and median number of steps for each day can be calculated.
-```{r}
+```{r meanmed1}
 mean_steps <- summarize(by_date,Average=mean(steps,na.rm=TRUE),group=1)
 median_steps <- summarize(by_date,Average=median(steps,na.rm=TRUE),group=2)#actually median
 
@@ -97,7 +97,7 @@ print(median)
 ```
 
 ## What is the average daily activity pattern?
-```{r}
+```{r avgdaily}
 by_interval <- data %>% group_by(interval)
 by_interval <- summarize(by_interval, Average=mean(steps,na.rm=TRUE))
 #print(by_interval)
@@ -132,7 +132,7 @@ lgth <- length(data$steps)
 So, out of the `r lgth` data points, `r numNAs` are NAs. To create a new dataset without NAs, the NAs will be replaced by the mean (over the 2 month interval) for that 5-minute interval.
 
 The original dataframe was copied and the position of the NA values identified. They were then replaced using a for loop.
-```{r}
+```{r replaceNA}
 #Create a list of positions of NA values
 NAs <- which(is.na(data$steps))
 
@@ -153,7 +153,7 @@ for(i in NAs){
 ```
 With this new dataframe, a histogram was made of steps taken each day.
 
-```{r}
+```{r plotadj}
 fill_by_date <- group_by(filled_data,date)
 filled_hist <- summarize(fill_by_date,Total=sum(steps))
 
@@ -169,13 +169,13 @@ print(fh)
 Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of inputing missing data on the estimates of the total daily number of steps?
 
 With this adjusted data, the mean and median number of steps for each day was re-calculated.
-```{r}
+```{r meanmedAdj}
 fmean <- summarize(fill_by_date,Average=mean(steps))
 fmedian <- summarize(fill_by_date,Median=median(steps))
 
 fms <- ggplot(fmean,aes(date,Average),group=1)+
      geom_point(size=2)+
-     geom_line(size=.5)+
+     #geom_line(size=.5)+
      xlab("Date")+
      #tilt the tick labels so they don't run together so much
      theme(axis.text.x=element_text(angle=75))+
@@ -183,7 +183,7 @@ fms <- ggplot(fmean,aes(date,Average),group=1)+
 
 fmds <- ggplot(fmedian,aes(date,Median),group=2)+
      geom_point(size=2)+
-     geom_line(size=.5)+
+     #geom_line(size=.5)+
      xlab("Date")+
      #tilt the tick labels so they don't run together so much
      theme(axis.text.x=element_text(angle=75))+
@@ -207,7 +207,7 @@ print(fmedian)
 ## Are there differences in activity patterns between weekdays and weekends?
 
 To determine how activity patterns differ by day of the week, new groups were created in the adjusted data. First, the day of the week corresponding to the date was found, after converting the date column to a recognized date object. Then, dates were designated "Weekends" or "Weekdays". 
-```{r}
+```{r ByDayGrps}
 #Add a column with the day of the week
 filled_data$date <- as.POSIXct(filled_data$date,format="%Y-%m-%d")
 filled_data <- mutate(filled_data,Day=weekdays(date))
@@ -230,7 +230,7 @@ filled_data <- cbind(filled_data,Group)
 
 
 Two graphs were generated, one that shows activity pattern weekends versus weekdays, and another, more detailed, per day of the week.
-```{r}
+```{r ByDayGrphs}
 #First graph: group by weekend/weekday
 wkend <- group_by(filled_data,Group,interval)
 wkend <- summarize(wkend,Average=mean(steps))
@@ -244,16 +244,24 @@ wk <- ggplot(wkend,aes(interval,Average),type="l")+
 print(wk)
 
 #Second graph is not required by assignment: per day of the week
-by_dayname <- group_by(filled_data,Day,interval)
-by_dayname <- summarize(by_dayname, Average=mean(steps))
 
-dn <- ggplot(by_dayname,aes(interval, Average))+
+by_dayname <- group_by(filled_data,interval,Day)
+by_dayname <- summarize(by_dayname, Average=mean(steps)) 
+
+#The following is trying to arrange the facets in order
+#by_dayname <- factor(by_dayname$Day,levels=c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"))
+#by_dayname <- arrange_(by_dayname$Day,c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"))
+#by_dayname %>% summarize(Average=mean(steps)) %>% ungroup() %>% arrange(by_dayname$Day,c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"))
+
+
+dn <- ggplot(by_dayname,aes(x=interval, y=Average))+
      geom_line()+
      facet_grid(Day ~ .)+
      xlab("Minute of the Day")+
      ylab("Mean Number of Steps")+
-     ggtitle("Mean No. Steps per Interval by Day of Week")
-     #Should reorganize order of the legend and change the colors
+     ggtitle("Mean No. Steps per Interval by Day of Week")+
+     theme(panel.background = element_rect(fill = "lightblue"))+
+     scale_colour_brewer(palette = "Oranges")
 
 print(dn)
 ```

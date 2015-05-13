@@ -73,7 +73,7 @@ s <- ggplot(total_steps,aes(date,total,group=1))+
 print(s)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-1-1.png) 
 
 ```r
 h <- ggplot(total_steps,aes(total))+
@@ -85,7 +85,7 @@ h <- ggplot(total_steps,aes(total))+
 print(h)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
 
 From this data, the mean and median number of steps for each day can be calculated.
 
@@ -112,7 +112,7 @@ print(ms)
 ## values (geom_point).
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+![](PA1_template_files/figure-html/meanmed1-1.png) 
 
 ```r
 #This looks a bit strange, needs checking
@@ -157,7 +157,7 @@ day_int <- ggplot(by_interval,aes(interval,Average,group=1))+
 print(day_int)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
+![](PA1_template_files/figure-html/avgdaily-1.png) 
 
 The Maximum value of average number of steps during any 5 minute period during the day, as can be seen from the graph, is at an interval in the 800-some minutes. The actual calculation is below:
 
@@ -225,7 +225,7 @@ fh <- ggplot(filled_hist,aes(Total))+
 print(fh)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
+![](PA1_template_files/figure-html/plotadj-1.png) 
 
 Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of inputing missing data on the estimates of the total daily number of steps?
 
@@ -237,7 +237,7 @@ fmedian <- summarize(fill_by_date,Median=median(steps))
 
 fms <- ggplot(fmean,aes(date,Average),group=1)+
      geom_point(size=2)+
-     geom_line(size=.5)+
+     #geom_line(size=.5)+
      xlab("Date")+
      #tilt the tick labels so they don't run together so much
      theme(axis.text.x=element_text(angle=75))+
@@ -245,7 +245,7 @@ fms <- ggplot(fmean,aes(date,Average),group=1)+
 
 fmds <- ggplot(fmedian,aes(date,Median),group=2)+
      geom_point(size=2)+
-     geom_line(size=.5)+
+     #geom_line(size=.5)+
      xlab("Date")+
      #tilt the tick labels so they don't run together so much
      theme(axis.text.x=element_text(angle=75))+
@@ -254,7 +254,7 @@ fmds <- ggplot(fmedian,aes(date,Median),group=2)+
 grid.arrange(fms,fmds,ncol=2)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
+![](PA1_template_files/figure-html/meanmedAdj-1.png) 
 
 ```r
 #Check these again
@@ -324,22 +324,30 @@ wk <- ggplot(wkend,aes(interval,Average),type="l")+
 print(wk)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-15-1.png) 
+![](PA1_template_files/figure-html/ByDayGrphs-1.png) 
 
 ```r
 #Second graph is not required by assignment: per day of the week
-by_dayname <- group_by(filled_data,Day,interval)
-by_dayname <- summarize(by_dayname, Average=mean(steps))
 
-dn <- ggplot(by_dayname,aes(interval, Average))+
+by_dayname <- group_by(filled_data,interval,Day)
+by_dayname <- summarize(by_dayname, Average=mean(steps)) 
+
+#The following is trying to arrange the facets in order
+#by_dayname <- factor(by_dayname$Day,levels=c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"))
+#by_dayname <- arrange_(by_dayname$Day,c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"))
+#by_dayname %>% summarize(Average=mean(steps)) %>% ungroup() %>% arrange(by_dayname$Day,c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"))
+
+
+dn <- ggplot(by_dayname,aes(x=interval, y=Average))+
      geom_line()+
      facet_grid(Day ~ .)+
      xlab("Minute of the Day")+
      ylab("Mean Number of Steps")+
-     ggtitle("Mean No. Steps per Interval by Day of Week")
-     #Should reorganize order of the legend and change the colors
+     ggtitle("Mean No. Steps per Interval by Day of Week")+
+     theme(panel.background = element_rect(fill = "lightblue"))+
+     scale_colour_brewer(palette = "Oranges")
 
 print(dn)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-15-2.png) 
+![](PA1_template_files/figure-html/ByDayGrphs-2.png) 
