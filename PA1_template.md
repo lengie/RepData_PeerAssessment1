@@ -1,10 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-Author: Liana Engie
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 This document analyzes data from a fitness activity monitoring device.
 The data contains the number of steps taken by an anonymous individual during the months of October and November 2012, in 5 minute intervals.
@@ -16,15 +10,45 @@ This markdown file assumes user is already in working directory.
 First, load the requisite packages in R. 
 Then, download the data from the internet and unzip it.
 
-```{r}
+
+```r
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 library(knitr)
 library(ggplot2)
 library(gridExtra)
+```
 
+```
+## Loading required package: grid
+```
+
+```r
 #download.file("http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip","act.zip") 
 #removed the s from http because knitr wouldn't run with it
 unzip("act.zip")
+```
+
+```
+## Warning in unzip("act.zip"): error 1 in extracting from zip file
+```
+
+```r
 data <- read.csv("activity.csv")
 ```
 
@@ -33,7 +57,8 @@ data <- read.csv("activity.csv")
 To get a sense of the data, the sum of total steps per day was calculated, as can be seen in the following graph. 
 A histogram was created of the frequency of number of steps taken in a day.
 
-```{r}
+
+```r
 by_date <- group_by(data,date)
 total_steps <- summarize(by_date,total=sum(steps,na.rm=TRUE))
 #print(total_steps)
@@ -54,7 +79,10 @@ s <- ggplot(total_steps,aes(date,total,group=1))+
 #my efforts to only display some x axis tick labels have all failed.
 print(s)
 ```
-```{r}
+
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
+
+```r
 h <- ggplot(total_steps,aes(total))+
      geom_histogram(color="steelblue")+
      theme_gray()+
@@ -64,12 +92,15 @@ h <- ggplot(total_steps,aes(total))+
 print(h)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
+
 From this data, the mean and median number of steps for each day can be calculated.
-```{r}
+
+```r
 mean_steps <- summarize(by_date,Average=mean(steps,na.rm=TRUE),group=1)
 median_steps <- summarize(by_date,Average=median(steps,na.rm=TRUE),group=2)#actually median
 
-#for ease of graphing on same plot
+#for ease of graphing
 meanmed <- rbind(mean_steps,median_steps)
 
 ms <- ggplot(meanmed,aes(date,Average),col=group)+
@@ -81,23 +112,39 @@ ms <- ggplot(meanmed,aes(date,Average),col=group)+
      ggtitle("Average Number of Steps Recorded per Day")
 #my efforts to only display some x axis tick labels have all failed
 print(ms)
-
-#This looks a bit strange, needs checking
 ```
+
+```
+## Warning in loop_apply(n, do.ply): Removed 16 rows containing missing
+## values (geom_point).
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
 
 
 The mean and median steps-per-day for both months overall was also calculated.
-```{r}
-#This part was not required in the assignment
+
+```r
 overall_mean <- mean(total_steps$total)
 print(overall_mean)
+```
 
+```
+## [1] 9354.23
+```
+
+```r
 median <- median(total_steps$total)
 print(median)
 ```
 
+```
+## [1] 10395
+```
+
 ## What is the average daily activity pattern?
-```{r}
+
+```r
 by_interval <- data %>% group_by(interval)
 by_interval <- summarize(by_interval, Average=mean(steps,na.rm=TRUE))
 #print(by_interval)
@@ -112,27 +159,41 @@ day_int <- ggplot(by_interval,aes(interval,Average,group=1))+
 print(day_int)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png) 
+
 The Maximum value of average number of steps during any 5 minute period during the day, as can be seen from the graph, is at an interval in the 800-some minutes. The actual calculation is below:
 
-```{r}
+
+```r
 by_interval[which.max(by_interval$Average),]
+```
+
+```
+## Source: local data frame [1 x 2]
+## 
+##   interval  Average
+## 1      835 206.1698
 ```
 
 ## Inputing missing values
 
 First, the total number of NA values recorded during the entire 2 month period is calculated. 
-```{r}
+
+```r
 numNAs <- sum(is.na(data$steps))
 print(numNAs)
 ```
-```{r,echo=FALSE}
-lgth <- length(data$steps)
+
+```
+## [1] 2304
 ```
 
-So, out of the `r lgth` data points, `r numNAs` are NAs. To create a new dataset without NAs, the NAs will be replaced by the mean (over the 2 month interval) for that 5-minute interval.
+
+So, out of the 17568 data points, 2304 are NAs. To create a new dataset without NAs, the NAs will be replaced by the mean (over the 2 month interval) for that 5-minute interval.
 
 The original dataframe was copied and the position of the NA values identified. They were then replaced using a for loop.
-```{r}
+
+```r
 #Create a list of positions of NA values
 NAs <- which(is.na(data$steps))
 
@@ -153,7 +214,8 @@ for(i in NAs){
 ```
 With this new dataframe, a histogram was made of steps taken each day.
 
-```{r}
+
+```r
 fill_by_date <- group_by(filled_data,date)
 filled_hist <- summarize(fill_by_date,Total=sum(steps))
 
@@ -163,13 +225,15 @@ fh <- ggplot(filled_hist,aes(Total))+
      xlab("Total steps per day")+
      ggtitle("Frequency of Steps per Day, with replaced NAs")
 print(fh)
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
 
 Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of inputing missing data on the estimates of the total daily number of steps?
 
 With this adjusted data, the mean and median number of steps for each day was re-calculated.
-```{r}
+
+```r
 fmean <- summarize(fill_by_date,Average=mean(steps))
 fmedian <- summarize(fill_by_date,Median=median(steps))
 
@@ -190,16 +254,28 @@ fmds <- ggplot(fmedian,aes(date,Median),group=2)+
      ggtitle("Median No. of Steps per Day, Adjusted")
      
 grid.arrange(fms,fmds,ncol=2)
-#Check these again
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
+
 The adjusted mean and median steps-per-day for both months overall was also calculated.
-```{r}
+
+```r
 foverall_mean <- mean(filled_hist$Total)
 print(foverall_mean)
+```
 
+```
+## [1] 10766.19
+```
+
+```r
 fmedian <- median(filled_hist$Total)
 print(fmedian)
+```
+
+```
+## [1] 10766.19
 ```
 
 
@@ -207,7 +283,8 @@ print(fmedian)
 ## Are there differences in activity patterns between weekdays and weekends?
 
 To determine how activity patterns differ by day of the week, new groups were created in the adjusted data. First, the day of the week corresponding to the date was found, after converting the date column to a recognized date object. Then, dates were designated "Weekends" or "Weekdays". 
-```{r}
+
+```r
 #Add a column with the day of the week
 filled_data$date <- as.POSIXct(filled_data$date,format="%Y-%m-%d")
 filled_data <- mutate(filled_data,Day=weekdays(date))
@@ -230,7 +307,8 @@ filled_data <- cbind(filled_data,Group)
 
 
 Two graphs were generated, one that shows activity pattern weekends versus weekdays, and another, more detailed, per day of the week.
-```{r}
+
+```r
 #First graph: group by weekend/weekday
 wkend <- group_by(filled_data,Group,interval)
 wkend <- summarize(wkend,Average=mean(steps))
@@ -239,21 +317,46 @@ wk <- ggplot(wkend,aes(interval,Average),type="l")+
      facet_grid(.~ Group)+
      geom_line()+
      xlab("Minute of the Day")+
-     ylab("Mean Number of Steps")+
+     ylab("Mean Number of Steps")
      ggtitle("Mean Number of Steps per Interval, Weekends vs Weekdays")
-print(wk)
+```
 
+```
+## $title
+## [1] "Mean Number of Steps per Interval, Weekends vs Weekdays"
+## 
+## attr(,"class")
+## [1] "labels"
+```
+
+```r
+print(wk)
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-15-1.png) 
+
+```r
 #Second graph is not required by assignment: per day of the week
 by_dayname <- group_by(filled_data,Day,interval)
 by_dayname <- summarize(by_dayname, Average=mean(steps))
 
 dn <- ggplot(by_dayname,aes(interval, Average))+
-     geom_line()+
-     facet_grid(Day.~)+
+     geom_line(aes(color=Day))+
      xlab("Minute of the Day")+
-     ylab("Mean Number of Steps")+
+     ylab("Mean Number of Steps")
      ggtitle("Mean No. Steps per Interval by Day of Week")
-     #Should reorganize order of the legend and change the colors
+```
 
+```
+## $title
+## [1] "Mean No. Steps per Interval by Day of Week"
+## 
+## attr(,"class")
+## [1] "labels"
+```
+
+```r
 print(dn)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-15-2.png) 
