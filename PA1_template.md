@@ -39,16 +39,9 @@ library(gridExtra)
 ```
 
 ```r
-#download.file("http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip","act.zip") 
+download.file("http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip","act.zip") 
 #removed the s from http because knitr wouldn't run with it
 unzip("act.zip")
-```
-
-```
-## Warning in unzip("act.zip"): error 1 in extracting from zip file
-```
-
-```r
 data <- read.csv("activity.csv")
 ```
 
@@ -100,7 +93,7 @@ From this data, the mean and median number of steps for each day can be calculat
 mean_steps <- summarize(by_date,Average=mean(steps,na.rm=TRUE),group=1)
 median_steps <- summarize(by_date,Average=median(steps,na.rm=TRUE),group=2)#actually median
 
-#for ease of graphing
+#for ease of graphing on same plot
 meanmed <- rbind(mean_steps,median_steps)
 
 ms <- ggplot(meanmed,aes(date,Average),col=group)+
@@ -121,10 +114,15 @@ print(ms)
 
 ![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
 
+```r
+#This looks a bit strange, needs checking
+```
+
 
 The mean and median steps-per-day for both months overall was also calculated.
 
 ```r
+#This part was not required in the assignment
 overall_mean <- mean(total_steps$total)
 print(overall_mean)
 ```
@@ -258,6 +256,10 @@ grid.arrange(fms,fmds,ncol=2)
 
 ![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
 
+```r
+#Check these again
+```
+
 The adjusted mean and median steps-per-day for both months overall was also calculated.
 
 ```r
@@ -317,19 +319,8 @@ wk <- ggplot(wkend,aes(interval,Average),type="l")+
      facet_grid(.~ Group)+
      geom_line()+
      xlab("Minute of the Day")+
-     ylab("Mean Number of Steps")
+     ylab("Mean Number of Steps")+
      ggtitle("Mean Number of Steps per Interval, Weekends vs Weekdays")
-```
-
-```
-## $title
-## [1] "Mean Number of Steps per Interval, Weekends vs Weekdays"
-## 
-## attr(,"class")
-## [1] "labels"
-```
-
-```r
 print(wk)
 ```
 
@@ -341,21 +332,13 @@ by_dayname <- group_by(filled_data,Day,interval)
 by_dayname <- summarize(by_dayname, Average=mean(steps))
 
 dn <- ggplot(by_dayname,aes(interval, Average))+
-     geom_line(aes(color=Day))+
+     geom_line()+
+     facet_grid(Day ~ .)+
      xlab("Minute of the Day")+
-     ylab("Mean Number of Steps")
+     ylab("Mean Number of Steps")+
      ggtitle("Mean No. Steps per Interval by Day of Week")
-```
+     #Should reorganize order of the legend and change the colors
 
-```
-## $title
-## [1] "Mean No. Steps per Interval by Day of Week"
-## 
-## attr(,"class")
-## [1] "labels"
-```
-
-```r
 print(dn)
 ```
 

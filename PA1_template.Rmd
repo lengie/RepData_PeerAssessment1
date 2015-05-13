@@ -22,7 +22,7 @@ library(knitr)
 library(ggplot2)
 library(gridExtra)
 
-#download.file("http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip","act.zip") 
+download.file("http://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip","act.zip") 
 #removed the s from http because knitr wouldn't run with it
 unzip("act.zip")
 data <- read.csv("activity.csv")
@@ -249,7 +249,7 @@ by_dayname <- summarize(by_dayname, Average=mean(steps))
 
 dn <- ggplot(by_dayname,aes(interval, Average))+
      geom_line()+
-     facet_grid(Day.~)+
+     facet_grid(Day ~ .)+
      xlab("Minute of the Day")+
      ylab("Mean Number of Steps")+
      ggtitle("Mean No. Steps per Interval by Day of Week")
